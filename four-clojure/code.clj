@@ -110,11 +110,39 @@
 (assert (= (?? 8) '(1 1 2 3 5 8 13 21)))
 ;; or use an iterator
 ;; LIKE IN PYTHON - GENERATOR v.s. ITERATOR pattern
+;; and how to use iterate with multiple parameters
 (def ?? #(take % (map first (iterate (fn [[a b]] [b (+ a b)]) [1 1]))))
 (assert (= (?? 8) '(1 1 2 3 5 8 13 21)))
 ;; some guys solution - LOL
+;; that makes a point how easy an overfitting solution can be invented.
 (def ?? (fn [i] (take i '(1 1 2 3 5 8 13 21))))
 (assert (= (?? 8) '(1 1 2 3 5 8 13 21)))
+
+;; problem 27 - palindrome
+;; use seq as general type
+(def ?? #(let [s (seq %) r (reverse %)] (= s r)))
+(assert (false? (?? '(1 2 3 4 5))))
+(assert (true? (?? "racecar")))
+
+;; problem 28 - flatten nested sequence without using "flatten"
+;; it is the depth-first walk of tree
+;; not the difference between seq? and sequential?
+;; seq? is MORE SPECIFIC ABOUT testing if it is a '(x y z...)
+;; sequential? is MORE GENERAL in the sense that '(..) [..] are all sequentials
+(def ?? #(filter (complement sequential?) (tree-seq sequential? identity %)))
+(assert (= (?? '((1 2) 3 [4 [5 6]])) '(1 2 3 4 5 6)))
+
+;; problem 29 -- get the caps
+;; Write a function which takes a string and returns a new string containing only the capital letters.
+;; a good chance to practice regular expression
+;; re-seq - findall in python
+(def ?? #(apply str (re-seq #"[A-Z]" %)))
+(assert (= (?? "$#A(*&987Zf") "AZ"))
+
+;; problem 30 - Write a function which removes consecutive duplicates from a sequence.
+;; the key is to realized that IT IS An adaptive Partition problem, use partition-by
+(def ?? #(map first (partition-by identity %)))
+(assert (= (?? [1 1 2 3 3 2 2 3]) '(1 2 3 2 3)))
 
 
 (println "all tests passed ...")
