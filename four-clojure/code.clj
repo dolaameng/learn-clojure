@@ -219,4 +219,47 @@
 (def ?? (fn [s coll] (drop-last (interleave coll (repeat s)))))
 (assert (= (?? :z [:a :b :c :d]) [:a :z :b :z :c :z :d]))
 
+;; problem 41 - drop every nth item
+;; Write a function which drops every Nth item from a sequence.
+;; Pattern accessing based on the index of data
+;; NTH - related functions in clojure
+;; (1) nth, nthnext nthrest  -- access a single nth element
+;; (2) take-nth [n coll] -- return a lazy seq of every nth element in coll
+;; (3) useful.seq/map-nth [f n coll] -- call f on every nth of coll
+;; the most fundamental way of doing accessing pattern based on index
+;; is to use index-pattern such as keep-indexed or map-indexed
+;; the diff between keep-indexed and map-indexed is that though they
+;; both call a function on (index, element) tuple, keep-indexed only keep
+;; the elements that are NOT nil
+(def ?? (fn [coll n] (keep-indexed (fn [i x] (if (pos? (rem (inc i) n)) x nil)) coll)))
+(assert (= (?? [1 2 3 4 5 6 7 8] 3) [1 2 4 5 7 8]))
+;; another solution is based on PARTITIONING
+;; where we can see how general the PARTITIONING pattern can be
+;; IT SEEMS Partitioning (split/partition) turns out to be 
+;; a very useful and general pattern
+(def ?? (fn [coll n] (mapcat (partial take (dec n)) (partition-all n coll))))
+(assert (= (?? [1 2 3 4 5 6 7 8] 3) [1 2 4 5 7 8]))
+
+;; problem 42 - calculate the factorial of n
+;; factorial can implemented by reduce
+(def ?? #(->> % inc (range 1) (reduce *)))
+(assert (= (?? 8) 40320))
+
+;; problem 43 - Reverse Interleave
+;; Write a function which reverses the interleave process into x number of subsequences.
+;; the reverse of interleave is the juxtaposition pattern
+;; Deeply they are more related to transpose of matrices
+;; it is a matrix transpose in essence (map list ...)
+(def ?? (fn [coll n] (apply map list (partition n coll))))
+(assert (= (?? [1 2 3 4 5 6] 2) '((1 3 5) (2 4 6))))
+(assert (= (?? (range 10) 5) '((0 5) (1 6) (2 7) (3 8) (4 9))))
+
+;; problem 44 - rotate a sequence
+;; Write a function which can rotate a sequence in either direction.
+;; in python rotation is usually done by using slicing
+(def ?? )
+(assert (= (?? 2 [1 2 3 4 5]) '(3 4 5 1 2)))
+(assert (= (?? -2 [1 2 3 4 5]) '(4 5 1 2 3)))
+
+
 (println "all tests passed ...")
