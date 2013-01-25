@@ -144,5 +144,79 @@
 (def ?? #(map first (partition-by identity %)))
 (assert (= (?? [1 1 2 3 3 2 2 3]) '(1 2 3 2 3)))
 
+;; problem 31 - pack a sequence
+;; Write a function which packs consecutive duplicates into sub-lists.
+;; the same partition problem as the previous one
+(def ?? #(partition-by identity %))
+(assert (= (?? [1 1 2 1 1 1 3 3]) '((1 1) (2) (1 1 1) (3 3))))
+
+;; problem 32 - duplicate a sequence 
+;; Write a function which duplicates each element of a sequence.
+;; typcial map-cat pattern - a special of case of map-reduce with 
+;; reduce = concat
+;; *** A VERY EASY-TO-MAKE MISTAKE FOR ME IS TO FORGET USE PARENTHESIS
+;; TO ENCOMPASS A FUNCTION CALL IN THE LIST FORM, E.G.
+;; IT SHOULD BE (def ?? (fn [xs] (mapcat #(repeat 2 %) xs)))
+;; BUT I COME UP WITH (def ?? (fn [xs] mapcat #(repeat 2 %) xs))
+;; THIS IS ACTUALLY EQUIVALENT TO CALL "mapcat" (without evaluation)
+;; and then call anonymous function #(..) (without evaluation)
+;; and then evaluate xs and return
+(def ?? (fn [xs] (mapcat #(repeat 2 %) xs)))
+(assert (= (?? [1 2 3]) '(1 1 2 2 3 3)))
+;; another solution is to recognize it as an INTERLEAVING pattern
+;; but as easily generalizable as the mapcat pattern - see problem 33 below
+(def ?? #(interleave % %))
+(assert (= (?? [1 2 3]) '(1 1 2 2 3 3)))
+
+;; problem 33 - generalization of problem 32
+;; Write a function which replicates each element of a sequence a variable number of times.
+(def ?? (fn [xs n] (mapcat #(repeat n %) xs)))
+(assert (= (?? [:a :b] 4) '(:a :a :a :a :b :b :b :b)))
+
+;; problem 34 - implement range with using range
+;; Pattern - range is itself a lazy-sequence - with a terminating (base) case
+(def ?? (fn fromto [start end] (if (= start end) 
+                                    () 
+                                    (lazy-seq (cons start (fromto (inc start) end))))))
+(assert (= (?? 1 4) '(1 2 3)))
+;; OF COURSE, every lazy-seq (generator in python) has a corresponding iterator solution
+;; use take-while (or take series) combined with iterate to get finite seq
+(def ?? (fn [start end] (take-while #(< % end) (iterate inc start))))
+(assert (= (?? 1 4) '(1 2 3)))
+;; a smart solution from others
+(def ?? (fn [start end] (map-indexed + (repeat (- end start) start))))
+(assert (= (?? -2 2) '(-2 -1 0 1)))
+
+;; problem 35, 36, 37 - ignored
+
+;; problem 38 - find max without using "max", "max-key"
+;; first - the diff between "max" and "max-key", e.g.
+;; (max 1 2 3) => 3
+;; (max-key {:one 1 :two 2 :three 3} :one :two :three) => :three
+;; "max-key" implements the pattern of COMPARISON BY VALUES
+;; MAX (or any linear comparsion pattern) can be implemented by REDUCE
+(def ?? (fn [& xs] (reduce (fn [sofar x] (if (> sofar  x) sofar x)) xs)))
+(assert (= (?? 1 8 3 4) 8))
+;; or you can always sort it in O(nlogn) first
+(def ?? (comp last sort list))
+(assert (= (?? 1 8 3 4) 8))
+
+;; problem 39 - interleave two sequences without using "interleave"
+;; INTERLEAVING is an important pattern allowing function to take
+;; inputs from different sources - LIKE zip in PYTHON
+;; on the other hand is the JUXTAPOSITION pattern, which takes different
+;; functions from different sources on the same data source, and return
+;; them in a vector result
+;; THE TRICK is that in clj, "map" is already able to suck from 
+;; different sources in a parallel way
+(def ?? (fn [& colls] (apply (partial mapcat list) colls)))
+(assert (= (?? [1 2 3] [:a :b :c]) '(1 :a 2 :b 3 :c)))
+(assert (= (?? [1 2] [3 4 5 6]) '(1 3 2 4)))
+
+;; problem 40 - interpose a seq - interpolate in python
+;; Write a function which separates the items of a sequence by an arbitrary value.
+;; it is essentially another INTERLEAVING pattern
+(def ?? (fn [s coll] (drop-last (interleave coll (repeat s)))))
+(assert (= (?? :z [:a :b :c :d]) [:a :z :b :z :c :z :d]))
 
 (println "all tests passed ...")
