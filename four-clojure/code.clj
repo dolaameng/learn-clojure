@@ -259,7 +259,12 @@
 ;; in python rotation is usually done by using slicing
 ;; in clojure, this is done through (split) or (juxt drop take)
 ;; split can be viewed as a special case of partition - only two parts
-(def ?? )
+(def ?? (fn rotate [n coll] 
+  (let [len (count coll)
+        nn (rem n len)
+        offset (if (pos? nn) nn (+ len nn))
+        [lhs rhs] (split-at offset coll)]
+        (concat rhs lhs))))
 (assert (= (?? 2 [1 2 3 4 5]) '(3 4 5 1 2)))
 (assert (= (?? -2 [1 2 3 4 5]) '(4 5 1 2 3)))
 
