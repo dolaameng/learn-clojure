@@ -336,11 +336,11 @@
 ;; THE TRICK: for one-step-look-forward pattern, construct the pairs of seq,
 ;; (partition n step)
 ;; partition the pairs of seq based on their relative order,
-; (partition-by)
+;; (partition-by)
 ;; pick (by mapping) the second of each pair 
 ;; (nested map)
-(def ?? (fn [xs] (map #(map second %) 
-    (partition-by (fn [[l r]] (< l r)) (partition 2 1 xs)))))
+(def ?? (fn [xs] (filter #(< 1 (count %)) 
+    (partition-by (fn [[l r]] (= (inc l) r)) (partition 2 1 xs)))))
 (assert (= (?? [1 0 1 2 3 0 4 5]) [0 1 2 3]))
 (assert (= (?? [5 6 1 3 2 7]) [5 6]))
 (assert (= (?? [2 3 3 4 5]) [3 4 5]))
