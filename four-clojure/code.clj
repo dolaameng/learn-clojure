@@ -268,5 +268,85 @@
 (assert (= (?? 2 [1 2 3 4 5]) '(3 4 5 1 2)))
 (assert (= (?? -2 [1 2 3 4 5]) '(4 5 1 2 3)))
 
+;; problem 45 - equavilance of "iterate" and "lazy seq"
+(def ?? ((fn s [x0] (lazy-seq (cons x0 (s (+ 3 x0))))) 1))
+(assert (= (take 5 ??) (take 5 (iterate #(+ 3 %) 1))))
+
+;; problem 46 - flipping out
+;; Write a higher-order function which flips the order of the arguments of an input function.
+;; pattern - return another function as the return value
+(def ?? (fn [f] (fn [& args] (apply f (reverse args)))))
+(assert (= 3 ((?? nth) 2 [1 2 3 4 5])))
+
+;; problem 47 - contain yourself
+;; The contains? function checks if a KEY is present in a given collection.
+;; This often leads beginner clojurians to use it incorrectly with 
+;; numerically indexed collections like vectors and lists.
+;; see the quenstion at http://stackoverflow.com/questions/14292324/how-to-understand-contains-applied-to-a-list-in-clojure
+;; ignored
+
+;; problem 48 - intro to some
+;; The some function takes a predicate function and a collection. It returns the first logical true value of (predicate x) 
+;; where x is an item in the collection.
+;; the main difference between "some" and "filter":
+;; "some" is a shortcut evaluation - returns the first true logical value
+;; "filter" is always working in O(n) time - return a lazy seq of items where pred is true
+;; One of the most typical pattern with "some" is to use a set/map as the pred
+;; to test the membership, e.g.
+(assert (= 6 (some #{2 7 6} [5 6 7 8])))
+(assert (= [6 7] (filter #{2 7 6} [5 6 7 8])))
+(assert (= 6 (some #(when (even? %) %) [5 6 7 8])))
+(assert (= [6 8] (filter #(when (even? %) %) [5 6 7 8])))
+
+;; problem 49 - Split a sequence
+;; Write a function which will split a sequence into two parts
+;; without using "split-at"
+(def ?? (juxt take drop))
+(assert (= (?? 3 [1 2 3 4 5 6]) [[1 2 3] [4 5 6]]))
+
+;; problem 50 - split by type
+;; Write a function which takes a sequence consisting of items with different 
+;; types and splits them up into a set of homogeneous sub-sequences. 
+;; The internal order of each sub-sequence should be maintained, 
+;; but the sub-sequences themselves can be returned in any order 
+;; (this is why 'set' is used in the test cases).
+;; THIS IS the CLUSTERING pattern, which is more general than
+;; PARTITIONING pattern (partition & split), the main diff is that in PARTITIONING
+;; pattern, the splits always happen at a boundary in the data set
+;; where in CLUSTERING, arbitrary boundaries (groups) can be formed
+(def ?? #(set (vals (group-by class %))))
+(assert (= (set (?? [[1 2] :a [3 4] 5 6 :b])) #{[[1 2] [3 4]] [:a :b] [5 6]}))
+
+;; problem 51 - Advanced Destructuring
+;; Here is an example of some more sophisticated destructuring.
+(assert (= [1 2 [3 4 5] [1 2 3 4 5]] 
+    (let [[a b & c :as d] [1 2 3 4 5]] [a b c d])))
+    
+;; problem 52 - passed
+
+;; problem 53 - Longest Increasing Sub-Seq
+;; Given a vector of integers, find the longest consecutive sub-sequence of 
+;; increasing numbers. If two sub-sequences have the same length, 
+;; use the one that occurs first. 
+;; An increasing sub-sequence must have a length of 2 or greater to qualify.
+;; PATTERN - linear search with one-step look-back/look-forward
+;; ONE-STEP LOOK-BACK or LOOK-FORWARD is so common in practice, 
+;; they have a built-in implementation in it - useful.seq/partition-between
+;; PATTERNS: "partition", "partition-by", "partition-between" 
+;; THE TRICK: for one-step-look-forward pattern, construct the pairs of seq,
+;; (partition n step)
+;; partition the pairs of seq based on their relative order,
+; (partition-by)
+;; pick (by mapping) the second of each pair 
+;; (nested map)
+(def ?? (fn [xs] (map #(map second %) 
+    (partition-by (fn [[l r]] (< l r)) (partition 2 1 xs)))))
+(assert (= (?? [1 0 1 2 3 0 4 5]) [0 1 2 3]))
+(assert (= (?? [5 6 1 3 2 7]) [5 6]))
+(assert (= (?? [2 3 3 4 5]) [3 4 5]))
+(assert (= (?? [7 6 5 4]) []))
+
+
+
 
 (println "all tests passed ...")
