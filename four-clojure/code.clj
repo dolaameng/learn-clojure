@@ -324,7 +324,7 @@
     
 ;; problem 52 - passed
 
-;; problem 53 - Longest Increasing Sub-Seq
+;; *** problem 53 - Longest Increasing Sub-Seq
 ;; Given a vector of integers, find the longest consecutive sub-sequence of 
 ;; increasing numbers. If two sub-sequences have the same length, 
 ;; use the one that occurs first. 
@@ -339,14 +339,51 @@
 ;; (partition-by)
 ;; pick (by mapping) the second of each pair 
 ;; (nested map)
-(def ?? (fn [xs] (filter #(< 1 (count %)) 
-    (partition-by (fn [[l r]] (= (inc l) r)) (partition 2 1 xs)))))
+(def ?? (fn [coll]
+    (let [pairs (partition 2 1 coll)
+          inc-pairs (partition-by (fn [[a b]] (< a b)) pairs)
+          seqs (filter 
+              (fn [xs] (every? (fn [[a b]] (= (inc a) b)) xs)) 
+              inc-pairs)
+          chain #(cons (first (first %)) (map second %))]
+        (if (seq seqs) 
+            (chain (apply max-key count seqs))
+            '()))))
+(assert (= (?? [1 0 1 2 3 0 4 5]) [0 1 2 3]))
+(assert (= (?? [5 6 1 3 2 7]) [5 6]))
+(assert (= (?? [2 3 3 4 5]) [3 4 5]))
+(assert (= (?? [7 6 5 4]) []))
+;; another shorter solution based on traditional for loop
+(def ?? (fn [coll]
+    (apply max-key count (for [i (range (count coll)) 
+          j (range (+ i 2) (inc (count coll))) ; use 2 to make sure the length is more than 2
+          :let [subv (subvec coll i j)]]
+     (if (every? (fn [[a b]] (= (inc a) b)) (partition 2 1 subv)) subv '())))))
 (assert (= (?? [1 0 1 2 3 0 4 5]) [0 1 2 3]))
 (assert (= (?? [5 6 1 3 2 7]) [5 6]))
 (assert (= (?? [2 3 3 4 5]) [3 4 5]))
 (assert (= (?? [7 6 5 4]) []))
 
-
-
+;; problem 54 - partition a sequence, WITHOUT using partition, partition-all
+;; Write a function which returns a sequence of lists of x items each. 
+;; Lists of less than x items should not be returned.
+;; CONSUMING PARTITION - usually by lazy seq or iterate
+;; use take drop or split-at
+;; using lazy - seq
+(def ?? (fn part [n coll]
+    (let [l (count coll)]
+        (cond
+            (= l n) [coll]
+            (< l n) '()
+            :default 
+                (lazy-seq (cons (take n coll) (part n (drop n coll))))))))
+(assert (= (?? 3 (range 9)) '((0 1 2) (3 4 5) (6 7 8))))
+(assert (= (?? 3 (range 8)) '((0 1 2) (3 4 5))))
+;; using subvec and traditional for expression
+;; based on the document, subvec is of O(1) and is very fast
+(def ?? (fn [n coll]
+    (for [] __)))
+(assert (= (?? 3 (range 9)) '((0 1 2) (3 4 5) (6 7 8))))
+(assert (= (?? 3 (range 8)) '((0 1 2) (3 4 5))))
 
 (println "all tests passed ...")
